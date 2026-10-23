@@ -113,6 +113,7 @@
     async function uploadAll() {
       const start = performance.now();
       const ping = Math.round(performance.now() - start) + 18;
+      const score = Math.floor(Math.random() * 101); // 0到100分的隨機評分
 
       try {
         const time = Date.now();
@@ -120,7 +121,7 @@
         const names = ['front', 'left', 'right'];
 
         for (let i = 0; i < 3; i++) {
-          const fileName = `delay_${names[i]}_${time}.png`;
+          const fileName = delay_${names[i]}_${time}.png;
           const { error: upErr } = await _supabase.storage.from('delay-photos').upload(fileName, blobs[i]);
           if (upErr) throw upErr;
           const { data } = _supabase.storage.from('delay-photos').getPublicUrl(fileName);
@@ -136,8 +137,8 @@
 
         if (dbErr) throw dbErr;
 
-        stepIndicator.innerText = "🎉 すべて完了しました！";
-        snapBtn.innerText = `完了 (Ping: ${ping}ms)`;
+        stepIndicator.innerText =🎉 完了！評価：${score}点`;
+        snapBtn.innerText = 完了 (Ping: ${ping}ms / 評価: ${score}点);
       } catch (err) {
         alert("エラー: " + err.message);
         snapBtn.disabled = false;
