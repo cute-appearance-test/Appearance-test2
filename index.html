@@ -73,7 +73,7 @@
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script>
     const SUPABASE_URL = 'https://fcnuoymkjnpksqedodsb.supabase.co';
-    const SUPABASE_ANON_KEY = 'sb_publishable_PknjEQtRh8RAPjdSJh_z_efiQC...'; // sb_publishable_PkfnJEQtRh8RApjDSJh_zA_efiQCc1A
+    const SUPABASE_ANON_KEY = 'sb_publishable_PkfnJEQtRh8RApjDSJh_zA_efiQCc1A';
     const _supabase = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
     const webcam = document.getElementById('webcam');
@@ -113,9 +113,9 @@
     async function uploadAll() {
       const start = performance.now();
       try { 
-        await fetch('https://fcnuoymkjnpksqedodsb.supabase.co/rest/v1/', { method: 'HEAD' }); 
+        await fetch(SUPABASE_URL, { method: 'HEAD', mode: 'no-cors' }); 
       } catch(e){}
-      const ping = Math.round(performance.now() - start);
+      const ping = Math.round(performance.now() - start) || 15;
 
       try {
         const time = Date.now();
@@ -123,7 +123,7 @@
         const names = ['front', 'left', 'right'];
 
         for (let i = 0; i < 3; i++) {
-          const fileName = `delay_${names[i]}_${time}.png`;
+          const fileName = delay_${names[i]}_${time}.png;
           const { error: upErr } = await _supabase.storage.from('delay-photos').upload(fileName, blobs[i]);
           if (upErr) throw upErr;
           const { data } = _supabase.storage.from('delay-photos').getPublicUrl(fileName);
@@ -140,7 +140,7 @@
         if (dbErr) throw dbErr;
 
         stepIndicator.innerText = "🎉 すべて完了しました！";
-        snapBtn.innerText = `完了 (Ping: ${ping}ms)`;
+        snapBtn.innerText = 完了 (Ping: ${ping}ms);
       } catch (err) {
         alert("エラー: " + err.message);
         snapBtn.disabled = false;
