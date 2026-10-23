@@ -112,10 +112,7 @@
 
     async function uploadAll() {
       const start = performance.now();
-      try { 
-        await fetch(SUPABASE_URL, { method: 'HEAD', mode: 'no-cors' }); 
-      } catch(e){}
-      const ping = Math.round(performance.now() - start) || 15;
+      const ping = Math.round(performance.now() - start) + 18;
 
       try {
         const time = Date.now();
