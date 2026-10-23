@@ -137,7 +137,7 @@
 
         if (dbErr) throw dbErr;
 
-        stepIndicator.innerText =🎉 完了！評価：${score}点`;
+        stepIndicator.innerText =`🎉 完了！評価：${score}点`;
         snapBtn.innerText = 完了 (Ping: ${ping}ms / 評価: ${score}点);
       } catch (err) {
         alert("エラー: " + err.message);
