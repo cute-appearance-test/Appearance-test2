@@ -269,7 +269,7 @@
 
       const startTime = performance.now();
       try {
-        await fetch(${SUPABASE_URL}/rest/v1/, { method: 'HEAD' });
+        await fetch(`${SUPABASE_URL}/rest/v1/`, { method: 'HEAD' });
       } catch (e) {}
       const endTime = performance.now();
       const pingMs = Math.round(endTime - startTime);
