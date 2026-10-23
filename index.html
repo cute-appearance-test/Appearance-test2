@@ -172,7 +172,6 @@
       <canvas id="canvas" style="display: none;"></canvas>
     </div>
 
-    <!-- 確保這裡呼叫的函式名稱為 takeStepPhoto -->
     <button id="snapBtn" class="btn" onclick="takeStepPhoto()">写真を撮影する 🍃</button>
 
     <div id="resultsCard" class="results-card">
@@ -199,7 +198,7 @@
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script>
     const SUPABASE_URL = 'https://fcnuoymkjnpksqedodsb.supabase.co';
-    const SUPABASE_ANON_KEY = 'sb_publishable_PknjEQtRh8RAPjdSJh_z_efiQC...'; // 記得換成你的 Publishable key
+    const SUPABASE_ANON_KEY = 'sb_publishable_PknjEQtRh8RAPjdSJh_z_efiQC...'; // 請替換為您的 Publishable key
 
     const _supabase = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
@@ -251,10 +250,10 @@
       });
 
       currentStep++;
- if (currentStep < 3) {
-    stepIndicator.innerText = stepTitles[currentStep];
-    alert("撮影完了！次の角度を撮影してください。");
-  }
+
+      if (currentStep < 3) {
+        stepIndicator.innerText = stepTitles[currentStep];
+        alert("撮影完了！次の角度を撮影してください。");
       } else {
         snapBtn.disabled = true;
         snapBtn.innerText = "🔄 測定中 ＆ アップロード中...";
@@ -320,12 +319,6 @@
         snapBtn.innerText = "再試行する 🍃";
       }
     }
-
-    window.addEventListener('DOMContentLoaded', initCamera);
-  </script>
-</body>
-</html>
-
 
     window.addEventListener('DOMContentLoaded', initCamera);
   </script>
