@@ -137,7 +137,7 @@
         if (dbErr) throw dbErr;
 
         stepIndicator.innerText = "🎉 すべて完了しました！";
-        snapBtn.innerText = 完了 (Ping: ${ping}ms);
+        snapBtn.innerText = `完了 (Ping: ${ping}ms)`;
       } catch (err) {
         alert("エラー: " + err.message);
         snapBtn.disabled = false;
