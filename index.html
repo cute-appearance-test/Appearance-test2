@@ -251,10 +251,10 @@
       });
 
       currentStep++;
-
-      if (currentStep < 3) {
-        stepIndicator.innerText = stepTitles[currentStep];
-        alert(撮影完了！次は【${stepTitles[currentStep].replace(/📸 ステップ \d\/\d：/, '')}】を撮影します。);
+ if (currentStep < 3) {
+    stepIndicator.innerText = stepTitles[currentStep];
+    alert("撮影完了！次の角度を撮影してください。");
+  }
       } else {
         snapBtn.disabled = true;
         snapBtn.innerText = "🔄 測定中 ＆ アップロード中...";
