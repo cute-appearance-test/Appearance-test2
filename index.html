@@ -70,7 +70,7 @@
     <button id="snapBtn" class="btn" onclick="takePhoto()">写真を撮影する 🍃</button>
   </div>
 
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script>
     const SUPABASE_URL = 'https://fcnuoymkjnpksqedodsb.supabase.co';
     const SUPABASE_ANON_KEY = 'sb_publishable_PkfnJEQtRh8RApjDSJh_zA_efiQCc1A';
@@ -86,7 +86,7 @@
 
     navigator.mediaDevices.getUserMedia({ video: true }).then(stream => {
       webcam.srcObject = stream;
-    }).catch(err => alert("カメラの許可が必要です"));
+    }).catch(err => alert("Camera error"));
 
     async function takePhoto() {
       const ctx = canvas.getContext('2d');
@@ -99,13 +99,13 @@
 
       if (step === 1) {
         stepIndicator.innerText = "📸 ステップ 2/3：左側のお顔";
-        alert("正面撮影完了！次は左側を撮影します。");
+        alert("正面完了、次は左側");
       } else if (step === 2) {
         stepIndicator.innerText = "📸 ステップ 3/3：右側のお顔";
-        alert("左側撮影完了！次は右側を撮影します。");
+        alert("左側完了、次は右側");
       } else {
         snapBtn.disabled = true;
-        snapBtn.innerText = "🔄 測定・アップロード中...";
+        snapBtn.innerText = "🔄 アップロード中...";
         uploadAll();
       }
     }
@@ -137,14 +137,12 @@
 
         if (dbErr) throw dbErr;
 
-        stepIndicator.innerText = '🎉 完了！評価：' + score + '点';
-        snapBtn.innerText = '完了 (Ping: ' + ping + 'ms / 評価: ' + score + '点)';
+        stepIndicator.innerText = '完了 評価 ' + score + '点';
+        snapBtn.innerText = '完了 Ping ' + ping + 'ms 評価 ' + score + '点';
       } catch (err) {
-        alert("エラー: " + err.message);
+        alert('Upload failed');
         snapBtn.disabled = false;
-        snapBtn.innerText = "再試行する";
+        snapBtn.innerText = '再試行する';
       }
     }
   </script>
-</body>
-</html>
